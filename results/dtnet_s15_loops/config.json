@@ -1,0 +1,75 @@
+{
+  "name": "dtnet_s15_loops",
+  "model": "dtnet",
+  "width": 128,
+  "depth": 30,
+  "zero_init": false,
+  "train_generators": [
+    "dfs",
+    "prim",
+    "kruskal"
+  ],
+  "train_size": 15,
+  "n_train": 30000,
+  "train_wr": [
+    0.0,
+    0.1
+  ],
+  "val_fraction": 0.1,
+  "epochs": 20,
+  "batch": 64,
+  "lr": 0.001,
+  "warmup": 2,
+  "alpha": 0.01,
+  "max_iters": 30,
+  "clip": 2.0,
+  "test_generators": [
+    "eller",
+    "wilson",
+    "hunt_and_kill",
+    "recursive_division",
+    "sidewinder"
+  ],
+  "test_sizes": {
+    "15": [
+      250,
+      100
+    ],
+    "31": [
+      250,
+      100
+    ],
+    "63": [
+      200,
+      50
+    ],
+    "127": [
+      100,
+      25
+    ],
+    "255": [
+      40,
+      8
+    ],
+    "511": [
+      16,
+      2
+    ]
+  },
+  "test_wr": [
+    0.0,
+    0.1
+  ],
+  "loop_test_max_size": 127,
+  "test_iters": [
+    30,
+    100,
+    300,
+    1000,
+    3000
+  ],
+  "extrap_sizes": {},
+  "amp": true,
+  "init_from": null,
+  "seed": 0
+}

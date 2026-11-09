@@ -1,0 +1,40 @@
+== dtnet_s15_noloops: dtnet, 783,504 params
+data: 27000 train / 3000 val, size 15
+epoch   1/20  train 0.6286  val loss 0.4921  val solved 0.0%  lr 5.01e-04  58s
+epoch   2/20  train 0.4056  val loss 0.3113  val solved 23.1%  lr 1.00e-03  55s
+epoch   3/20  train 339.8888  val loss 0.0019  val solved 99.7%  lr 9.92e-04  53s
+epoch   4/20  train 22751.4713  val loss 0.0003  val solved 100.0%  lr 9.70e-04  53s
+epoch   5/20  train 80745373.1576  val loss 0.2030  val solved 37.6%  lr 9.33e-04  54s
+epoch   6/20  train 0.0643  val loss 0.0024  val solved 99.4%  lr 8.83e-04  54s
+epoch   7/20  train 0.0275  val loss 0.0209  val solved 96.2%  lr 8.21e-04  51s
+epoch   8/20  train 0.0466  val loss 0.0006  val solved 99.9%  lr 7.50e-04  54s
+epoch   9/20  train 0.0018  val loss 0.0001  val solved 100.0%  lr 6.71e-04  54s
+epoch  10/20  train 0.0109  val loss 0.0002  val solved 100.0%  lr 5.87e-04  50s
+epoch  11/20  train 0.3135  val loss 0.0047  val solved 99.4%  lr 5.00e-04  50s
+epoch  12/20  train 1.1526  val loss 0.0005  val solved 99.9%  lr 4.13e-04  50s
+epoch  13/20  train 0.0012  val loss 0.0003  val solved 99.8%  lr 3.29e-04  54s
+epoch  14/20  train 0.0024  val loss 0.0007  val solved 99.8%  lr 2.50e-04  52s
+epoch  15/20  train 0.0364  val loss 0.0007  val solved 99.9%  lr 1.79e-04  50s
+epoch  16/20  train 0.0010  val loss 0.0002  val solved 100.0%  lr 1.17e-04  52s
+epoch  17/20  train 0.0008  val loss 0.0002  val solved 100.0%  lr 6.70e-05  50s
+epoch  18/20  train 0.0007  val loss 0.0002  val solved 99.9%  lr 3.02e-05  53s
+epoch  19/20  train 0.0008  val loss 0.0002  val solved 99.9%  lr 7.60e-06  51s
+epoch  20/20  train 0.0007  val loss 0.0002  val solved 99.9%  lr 0.00e+00  55s
+best val solved 100.0% (val loss 0.0001)
+0.0/15 n=250: 30:100.0%  100:100.0%  300:100.0%  1000:100.0%  3000:100.0%   (12s)
+0.0/31 n=250: 30:81.2%  100:100.0%  300:100.0%  1000:100.0%  3000:100.0%   (52s)
+0.0/63 n=200: 30:5.5%  100:97.0%  300:100.0%  1000:100.0%  3000:100.0%   (168s)
+0.0/127 n=100: 30:0.0%  100:44.0%  300:99.0%  1000:99.0%  3000:99.0%   (332s)
+0.0/255 n=40: 30:0.0%  100:0.0%  300:55.0%  1000:92.5%  3000:92.5%   (533s)
+0.0/511 n=16: 30:0.0%  100:0.0%  300:6.2%  1000:56.2%  3000:62.5%   (908s)
+0.1/15 n=250: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (12s)
+0.1/31 n=250: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (52s)
+0.1/63 n=200: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (170s)
+0.1/127 n=100: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (332s)
+done
+== dtnet_s15_noloops: dtnet, 783,504 params
+0.1/15 n=250: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (12s)
+0.1/31 n=250: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (52s)
+0.1/63 n=200: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (165s)
+0.1/127 n=100: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (309s)
+done
