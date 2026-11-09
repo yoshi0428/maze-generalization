@@ -5,7 +5,8 @@ plus a 1-pixel wall around it, so H = W = size + 2:
 
     input:  (3, H, W)  channel 0 = maze (1 = passage, 0 = wall),
                        channel 1 = start (1 at one pixel), channel 2 = exit
-    target: (1, H, W)  1 on the shortest path from start to exit, inclusive
+    target: (1, H, W)  1 on every shortest path from start to exit, inclusive
+                       (the unique path in a perfect maze; all tied paths with loops)
 
 Start and exit are two distinct random cells. Mazes are generated lazily and
 deterministically from (seed, index), so a dataset is reproducible without
@@ -36,38 +37,68 @@ def random_endpoints(maze: np.ndarray, rng: np.random.Generator) -> tuple[Point,
     return (2 * ar + 1, 2 * ac + 1), (2 * br + 1, 2 * bc + 1)
 
 
-def shortest_path(maze: np.ndarray, start: Point, goal: Point) -> np.ndarray:
-    """0/1 mask of the BFS shortest path from start to goal through passage pixels."""
-    h, w = maze.shape
-    open_ = (maze == PASSAGE).ravel()
-    parent = np.full(h * w, -1, dtype=np.int64)
-    s, g = start[0] * w + start[1], goal[0] * w + goal[1]
-    parent[s] = s
+def bfs_distances(open_: np.ndarray, source: Point) -> np.ndarray:
+    """Steps from `source` to every pixel through the True pixels of `open_` (-1 = unreachable)."""
+    h, w = open_.shape
+    flat = open_.ravel()
+    dist = np.full(h * w, -1, dtype=np.int64)
+    s = source[0] * w + source[1]
+    if not flat[s]:
+        return dist.reshape(h, w)
+    dist[s] = 0
 
     queue = deque([s])
     while queue:
         cur = queue.popleft()
-        if cur == g:
-            break
-
         r, c = divmod(cur, w)
         for nxt in (cur - w if r > 0 else -1, cur + w if r < h - 1 else -1,
                     cur - 1 if c > 0 else -1, cur + 1 if c < w - 1 else -1):
-            if nxt >= 0 and open_[nxt] and parent[nxt] < 0:
-                parent[nxt] = cur
+            if nxt >= 0 and flat[nxt] and dist[nxt] < 0:
+                dist[nxt] = dist[cur] + 1
                 queue.append(nxt)
 
-    if parent[g] < 0:
+    return dist.reshape(h, w)
+
+
+def shortest_path(maze: np.ndarray, start: Point, goal: Point) -> np.ndarray:
+    """
+    0/1 mask of every pixel that lies on *some* shortest path from start to goal.
+
+    In a perfect maze the shortest path is unique and this is that path. With loops
+    (walls removed) several paths can tie; marking all of them makes the target a
+    deterministic function of the maze instead of depending on BFS neighbour order.
+    A pixel p is on a shortest path iff dist(start, p) + dist(p, goal) == dist(start, goal).
+    """
+    open_ = maze == PASSAGE
+    from_start, from_goal = bfs_distances(open_, start), bfs_distances(open_, goal)
+    length = from_start[goal]
+    if length < 0:
         raise ValueError(f"No path from {start} to {goal}")
 
-    path = np.zeros(h * w, dtype=np.uint8)
-    cur = g
-    while cur != s:
-        path[cur] = 1
-        cur = parent[cur]
-    path[s] = 1
+    on_path = (from_start >= 0) & (from_goal >= 0) & (from_start + from_goal == length)
 
-    return path.reshape(h, w)
+    return on_path.astype(np.uint8)
+
+
+def is_shortest_path(maze: np.ndarray, start: Point, goal: Point, pred: np.ndarray) -> bool:
+    """
+    Whether `pred` (H x W, nonzero = on path) is a correct answer: either the full
+    target of `shortest_path` (all tied shortest paths) or exactly one shortest path.
+
+    Use it to score predictions that pick a single path, such as BFS / A* baselines or
+    models trained on one-path labels. One path means: passage pixels only, connected
+    from start to goal, and exactly length + 1 pixels (so no detours or extra pixels).
+    """
+    pred = pred.astype(bool)
+    if np.array_equal(pred, shortest_path(maze, start, goal).astype(bool)):
+        return True
+
+    open_ = maze == PASSAGE
+    length = bfs_distances(open_, start)[goal]
+    if pred.sum() != length + 1 or (pred & ~open_).any():
+        return False
+
+    return bfs_distances(pred, start)[goal] == length
 
 
 class MazeDataset(Dataset):
@@ -83,7 +114,9 @@ class MazeDataset(Dataset):
         num_samples: Number of mazes.
         seed: Base seed; sample i is seeded with (seed, i).
         wall_removal: Fraction of interior walls to open after generation,
-            turning perfect mazes into mazes with loops. 0 disables.
+            turning perfect mazes into mazes with loops. 0 disables. A
+            (min, max) pair draws a fraction uniformly per maze, so a dataset
+            can mix perfect mazes with mazes that have loops.
         exclude_generators: Generators that must not appear in `generators`
             (used to keep test generators disjoint from training ones).
     """
@@ -94,7 +127,7 @@ class MazeDataset(Dataset):
         size: int,
         num_samples: int,
         seed: int = 0,
-        wall_removal: float = 0.0,
+        wall_removal: float | tuple[float, float] = 0.0,
         exclude_generators: Sequence[str] = (),
     ):
         if not generators:
@@ -113,8 +146,9 @@ class MazeDataset(Dataset):
         if size < 3:
             raise ValueError(f"Maze size must be >= 3 to fit a start and an exit, got {size}")
 
-        if not 0.0 <= wall_removal <= 1.0:
-            raise ValueError(f"wall_removal must be in [0, 1], got {wall_removal}")
+        lo, hi = wall_removal if isinstance(wall_removal, tuple) else (wall_removal, wall_removal)
+        if not 0.0 <= lo <= hi <= 1.0:
+            raise ValueError(f"wall_removal must be in [0, 1] (or a range within it), got {wall_removal}")
 
         self.generator_names = list(generators)
         self._generators = [get_generator(name) for name in generators]
@@ -146,8 +180,12 @@ class MazeDataset(Dataset):
         # start and exit with or without it.
         start, goal = random_endpoints(maze, rng)
 
-        if self.wall_removal > 0:
-            maze = remove_walls(maze, self.wall_removal, rng)
+        fraction = self.wall_removal
+        if isinstance(fraction, tuple):
+            fraction = rng.uniform(*fraction)
+
+        if fraction > 0:
+            maze = remove_walls(maze, fraction, rng)
 
         return maze, start, goal
 
@@ -168,16 +206,18 @@ def make_train_dataset(
     size: int = 63,
     num_samples: int = 10_000,
     seed: int = 0,
+    wall_removal: float | tuple[float, float] = 0.0,
 ) -> MazeDataset:
     """
     Training mazes, evenly split across the given generator(s).
 
-    Pass a single name (e.g. "dfs") to train on one generator only.
+    Pass a single name (e.g. "dfs") to train on one generator only. Pass
+    wall_removal (a fraction or a (min, max) range) to include mazes with loops.
     """
     if isinstance(generators, str):
         generators = [generators]
 
-    return MazeDataset(generators, size, num_samples, seed=seed)
+    return MazeDataset(generators, size, num_samples, seed=seed, wall_removal=wall_removal)
 
 
 def make_test_datasets(
@@ -186,7 +226,7 @@ def make_test_datasets(
     num_samples: int,
     train_generators: Sequence[str],
     seed: int = 1,
-    wall_removal: float = 0.0,
+    wall_removal: float | tuple[float, float] = 0.0,
 ) -> dict[int, MazeDataset]:
     """
     One test dataset per maze size, keyed by size.
