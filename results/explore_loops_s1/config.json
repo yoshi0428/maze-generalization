@@ -1,9 +1,10 @@
 {
-  "name": "dtnet_optuna_best",
+  "name": "explore_loops_s1",
   "model": "dtnet",
   "width": 128,
   "depth": 30,
   "zero_init": false,
+  "aux_weight": 1.0,
   "train_generators": [
     "dfs",
     "prim",
@@ -11,15 +12,18 @@
   ],
   "train_size": 15,
   "n_train": 30000,
-  "train_wr": 0.0,
+  "train_wr": [
+    0.0,
+    0.1
+  ],
   "val_fraction": 0.1,
   "epochs": 20,
   "batch": 64,
-  "lr": 0.0016100291375377848,
+  "lr": 0.001,
   "warmup": 2,
-  "alpha": 0.006332871181957377,
-  "max_iters": 35,
-  "clip": 0.25921044890136113,
+  "alpha": 0.01,
+  "max_iters": 30,
+  "clip": 2.0,
   "test_generators": [
     "eller",
     "wilson",
@@ -43,14 +47,6 @@
     "127": [
       100,
       25
-    ],
-    "255": [
-      40,
-      8
-    ],
-    "511": [
-      16,
-      2
     ]
   },
   "test_wr": [
@@ -68,5 +64,5 @@
   "extrap_sizes": {},
   "amp": true,
   "init_from": null,
-  "seed": 0
+  "seed": 1
 }

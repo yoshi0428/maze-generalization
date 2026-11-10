@@ -4,6 +4,7 @@
   "width": 128,
   "depth": 30,
   "zero_init": false,
+  "aux_weight": 1.0,
   "train_generators": [
     "dfs",
     "prim",
@@ -18,7 +19,7 @@
   "val_fraction": 0.1,
   "epochs": 20,
   "batch": 64,
-  "lr": 0.001,
+  "lr": 0.0003,
   "warmup": 2,
   "alpha": 0.01,
   "max_iters": 30,

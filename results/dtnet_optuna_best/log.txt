@@ -1,2 +1,0 @@
-== dtnet_optuna_best: dtnet, 783,504 params
-data: 27000 train / 3000 val, size 15

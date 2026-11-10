@@ -24,9 +24,8 @@ on the others.
   retrains the best configuration. Finished runs are loaded from `results/`, so it resumes.
 - `notebooks/error_analysis.ipynb`: why trained models fail. Splits the wrong pixels of failed
   test mazes into gaps, dropped tied routes, longer routes kept around loops, and unfilled dead ends.
-- `src/runner.py`: train/evaluate one `Config`; shared by the experiments notebook and
-  `scripts/experiment.py`, the command-line version for unattended runs. Each run writes logs,
-  loss curves and test results to `results/<name>/` and the checkpoint to
+- `src/runner.py`: train/evaluate one `Config`; used by the experiments notebook. Each run writes
+  logs, loss curves and test results to `results/<name>/` and the checkpoint to
   `checkpoints/<name>.pt`. `results/SUMMARY.md` summarizes the runs so far.
 
 ## References

@@ -1,5 +1,4 @@
-"""Train and test one model configuration. Shared by scripts/experiment.py and
-notebooks/experiments.ipynb.
+"""Train and test one model configuration. Used by notebooks/experiments.ipynb.
 
     cfg = Config(name="dtnet_s15", train_size=15, test_sizes={63: (200, 50)})
     out = run(cfg, out_dir=Path("results/dtnet_s15"), checkpoint=Path("checkpoints/dtnet_s15.pt"))
