@@ -2,9 +2,11 @@
 
 Same projection, residual blocks and head as models.dt_net.DTNetRecall, but every block has
 its own weights and the depth is fixed, so the network cannot "think longer" at test time.
-This is the feedforward baseline of Schwarzschild et al. (2021): with the default depth of 30
-blocks it uses about as much compute per maze as DTNet at 30 training iterations, so the
-difference between the two comes from weight tying and the ability to run more iterations.
+This is the feedforward baseline of Schwarzschild et al. (2021). The default depth of 30 blocks
+does not match DTNet's compute: each DTNet iteration runs five convs (recall_conv plus two
+blocks of two), so DTNet at 30 iterations does about 2.5x the work per pixel (~22.3M vs ~8.9M
+multiply-adds), while this net has about 11x the parameters (8.89M vs 0.78M). About 75 blocks
+would be needed to match DTNet's compute at 30 iterations.
 
 Works on the samples produced by dataset.MazeDataset:
 
