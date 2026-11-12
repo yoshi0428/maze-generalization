@@ -3,7 +3,7 @@
 All runs: `notebooks/experiments.ipynb` on an RTX 5060 Ti 16 GB with bf16 autocast, seed 0. Each
 run folder holds `log.txt`, `config.json`, `history.json`, `results.json`, `curves.png`
 (train/val loss, val solved) and `test.png`; `error_analysis.json` / `.png` come from
-`notebooks/error_analysis.ipynb`.
+the error analysis in `notebooks/pipeline.ipynb`.
 
 Common settings: 30k training mazes of size 15 (10% for validation), 20 epochs, batch 64, lr 1e-3
 (3e-4 for runs with loops in training, see Training stability), 2 warmup epochs then cosine
@@ -139,7 +139,7 @@ on seeds 0–2, it was close to plain DTNet on loop mazes (size 63: 40 / 28.5 / 
 pixels right at size 15, no maze fully right). Without loops it learned the distances along the
 tree but extrapolated worse (42.5% vs 92.5% at 255). The code and runs were deleted.
 
-## Error analysis (`notebooks/error_analysis.ipynb`)
+## Error analysis (`notebooks/pipeline.ipynb`)
 
 Wrong pixels of failed test mazes at 300 iterations, split into: gaps in pixels every shortest
 path uses (missed forced), dropped tied routes (missed tied), longer routes kept around loops

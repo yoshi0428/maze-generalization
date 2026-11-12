@@ -289,6 +289,22 @@ def _read_json(path: Path) -> dict:
     return json.loads(path.read_text()) if path.exists() else {}
 
 
+def load_config(run_dir: Path) -> Config:
+    """The Config saved in run_dir/config.json, named after the folder.
+
+    The folder name wins over the saved name because run folders get renamed (their
+    checkpoint is checkpoints/<folder name>.pt). JSON lists and string keys are turned
+    back into tuples and ints.
+    """
+    run_dir = Path(run_dir)
+    saved = json.loads((run_dir / "config.json").read_text())
+    kwargs = {k: tuple(v) if isinstance(v, list) else v for k, v in saved.items()}
+    for k in ("test_sizes", "extrap_sizes"):
+        kwargs[k] = {int(size): tuple(v) for size, v in kwargs.get(k, {}).items()}
+    kwargs["name"] = run_dir.name
+    return Config(**kwargs)
+
+
 def run_or_load(cfg: Config, results_dir: Path, checkpoint_dir: Path, **kwargs) -> dict:
     """Load a finished run from results_dir/<name>, finish a partial one, or run from scratch.
 

@@ -16,15 +16,15 @@ on the others.
 - `src/models/feedforward.py`: fixed-depth feedforward baseline \[1\]: DTNet's blocks without
   weight tying, so it cannot run more iterations on larger mazes.
 - `notebooks/dataset_generation_ex.ipynb`: dataset examples and visualizations.
-- `notebooks/dtnet_pipeline.ipynb`, `notebooks/feedforward_pipeline.ipynb`: the full pipeline for
-  each model (data, training, validation, testing on unseen generators and sizes), with identical
-  data and evaluation settings. Run locally or in Google Colab.
+- `notebooks/pipeline.ipynb`: pick a trained run (DTNet or feedforward) by name; loads its
+  checkpoint and saved config, then shows its training curves, sample mazes, test results on
+  unseen generators, sizes and loops, and predictions. Ends with an error analysis of why it
+  fails: splits the wrong pixels of failed test mazes into gaps, dropped tied routes, longer
+  routes kept around loops, and unfilled dead ends. Run locally or in Google Colab.
 - `notebooks/experiments.ipynb`: runs the study's comparisons (DTNet vs feedforward, mixed vs
   single generator, loops in training, zero-init) and an Optuna hyperparameter search, then
   retrains the best configuration. Finished runs are loaded from `results/`, so it resumes.
-- `notebooks/error_analysis.ipynb`: why trained models fail. Splits the wrong pixels of failed
-  test mazes into gaps, dropped tied routes, longer routes kept around loops, and unfilled dead ends.
-- `src/runner.py`: train/evaluate one `Config`; used by the experiments notebook. Each run writes
+- `src/runner.py`: train/evaluate one `Config`; used by the experiments and pipeline notebooks. Each run writes
   logs, loss curves and test results to `results/<name>/` and the checkpoint to
   `checkpoints/<name>.pt`. `results/SUMMARY.md` summarizes the runs so far.
 
@@ -94,3 +94,10 @@ hunt-and-kill, sidewinder and binary tree. <https://professor-l.github.io/mazes/
 
 \[17\] professor-l. *mazes*: source code for \[16\] (MIT license).
 <https://github.com/professor-l/mazes>
+
+### Neural algorithmic reasoning
+
+\[18\] P. Veličković, R. Ying, M. Padovano, R. Hadsell, C. Blundell. "Neural Execution of Graph
+Algorithms." *ICLR*, 2020. [arXiv:1910.10593](https://arxiv.org/abs/1910.10593). Graph networks
+trained to imitate the steps of BFS and Bellman-Ford; max aggregation matches the algorithm's
+structure and generalizes to larger graphs than the training ones.

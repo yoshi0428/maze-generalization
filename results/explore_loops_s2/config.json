@@ -4,7 +4,6 @@
   "width": 128,
   "depth": 30,
   "zero_init": false,
-  "aux_weight": 1.0,
   "train_generators": [
     "dfs",
     "prim",
