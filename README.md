@@ -53,7 +53,10 @@ Segmentation." *MICCAI*, LNCS 9351, pp. 234–241, 2015.
 
 \[6\] B. Knutson, A. C. Rabeendran, M. Ivanitskiy, J. Pettyjohn, C. Diniz-Behn, S. Wu Fung,
 D. McKenzie. "On Logical Extrapolation for Mazes with Recurrent and Implicit Networks."
-arXiv preprint, 2024. [arXiv:2410.03020](https://arxiv.org/abs/2410.03020)
+arXiv preprint, 2024. [arXiv:2410.03020](https://arxiv.org/abs/2410.03020). Tests DTNet and
+implicit (fixed-point) networks on maze shifts beyond size: some extrapolate in size but fail
+on other shifts, more diverse training data does not fix logical extrapolation, and models not
+trained to reach a fixed point can end in limit cycles.
 
 ### Datasets and code
 
@@ -101,3 +104,16 @@ hunt-and-kill, sidewinder and binary tree. <https://professor-l.github.io/mazes/
 Algorithms." *ICLR*, 2020. [arXiv:1910.10593](https://arxiv.org/abs/1910.10593). Graph networks
 trained to imitate the steps of BFS and Bellman-Ford; max aggregation matches the algorithm's
 structure and generalizes to larger graphs than the training ones.
+
+\[19\] J. Bear, A. Prügel-Bennett, J. Hare. "Rethinking Deep Thinking: Stable Learning of
+Algorithms using Lipschitz Constraints." *NeurIPS*, 2024.
+[arXiv:2410.23451](https://arxiv.org/abs/2410.23451). DT-L: constrains DTNet's recurrent step to
+a contraction (spectral normalisation, ELU, weighted residuals), which makes training stable and
+guarantees convergence to a unique solution at test time, with far fewer parameters.
+
+\[20\] C. Anil, A. Pokle, K. Liang, J. Treutlein, Y. Wu, S. Bai, J. Z. Kolter, R. Grosse. "Path
+Independent Equilibrium Models Can Better Exploit Test-Time Computation." *NeurIPS*, 2022.
+[arXiv:2211.09961](https://arxiv.org/abs/2211.09961). Models that reach the same final state
+whatever their initial state (path independent) gain from extra test-time iterations, while
+path-dependent ones degrade; starting part of each batch from noise and randomising the depth
+during training promote it.
