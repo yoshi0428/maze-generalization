@@ -1,0 +1,34 @@
+== dtnet_optuna_best: dtnet, 783,504 params
+data: 27000 train / 3000 val, size 15
+epoch   1/20  train 0.6046  val loss 0.4462  val solved 0.8%  lr 6.70e-04  57s
+epoch   2/20  train 0.2651  val loss 0.0248  val solved 96.4%  lr 1.34e-03  55s
+epoch   3/20  train 0.3006  val loss 0.0240  val solved 96.4%  lr 1.33e-03  55s
+epoch   4/20  train 1332648.2781  val loss 0.0067  val solved 99.5%  lr 1.30e-03  56s
+epoch   5/20  train 0.0286  val loss 0.0096  val solved 95.4%  lr 1.25e-03  55s
+epoch   6/20  train 0.0147  val loss 0.0021  val solved 99.6%  lr 1.18e-03  56s
+epoch   7/20  train 0.0038  val loss 0.0004  val solved 99.9%  lr 1.10e-03  56s
+epoch   8/20  train 338854.7654  val loss 0.0010  val solved 99.7%  lr 1.00e-03  56s
+epoch   9/20  train 0.2113  val loss 0.0006  val solved 100.0%  lr 8.97e-04  56s
+epoch  10/20  train 0.0026  val loss 0.0001  val solved 100.0%  lr 7.84e-04  57s
+epoch  11/20  train 269.7010  val loss 0.0007  val solved 100.0%  lr 6.68e-04  57s
+epoch  12/20  train 0.0045  val loss 0.0007  val solved 100.0%  lr 5.52e-04  56s
+epoch  13/20  train 0.0178  val loss 0.0014  val solved 99.8%  lr 4.40e-04  55s
+epoch  14/20  train 0.0023  val loss 0.0002  val solved 100.0%  lr 3.34e-04  56s
+epoch  15/20  train 0.0014  val loss 0.0000  val solved 100.0%  lr 2.39e-04  57s
+epoch  16/20  train 0.0010  val loss 0.0001  val solved 100.0%  lr 1.56e-04  57s
+epoch  17/20  train 0.0010  val loss 0.0000  val solved 100.0%  lr 8.95e-05  56s
+epoch  18/20  train 0.0010  val loss 0.0000  val solved 100.0%  lr 4.03e-05  56s
+epoch  19/20  train 0.0010  val loss 0.0000  val solved 100.0%  lr 1.02e-05  58s
+epoch  20/20  train 0.0008  val loss 0.0000  val solved 100.0%  lr 0.00e+00  57s
+best val solved 100.0% (val loss 0.0000)
+0.0/15 n=250: 30:100.0%  100:100.0%  300:100.0%  1000:100.0%  3000:100.0%   (12s)
+0.0/31 n=250: 30:93.6%  100:100.0%  300:100.0%  1000:100.0%  3000:100.0%   (55s)
+0.0/63 n=200: 30:21.0%  100:97.0%  300:100.0%  1000:99.5%  3000:99.5%   (178s)
+0.0/127 n=100: 30:0.0%  100:37.0%  300:96.0%  1000:99.0%  3000:99.0%   (360s)
+0.0/255 n=40: 30:0.0%  100:0.0%  300:47.5%  1000:85.0%  3000:90.0%   (579s)
+0.0/511 n=16: 30:0.0%  100:0.0%  300:0.0%  1000:31.2%  3000:50.0%   (965s)
+0.1/15 n=250: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (12s)
+0.1/31 n=250: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (56s)
+0.1/63 n=200: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (184s)
+0.1/127 n=100: 30:0.0%  100:0.0%  300:0.0%  1000:0.0%  3000:0.0%   (361s)
+done
