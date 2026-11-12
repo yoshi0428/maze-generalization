@@ -13,10 +13,10 @@ import json
 import os
 import random
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from functools import lru_cache
+from functools import lru_cache, partial
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import torch
@@ -27,10 +27,20 @@ from models import dt_net, feedforward
 
 TEST_GENERATORS = ("eller", "wilson", "hunt_and_kill", "recursive_division", "sidewinder")
 
+
+
+def _make_dtnet(cfg: "Config") -> torch.nn.Module:
+    return dt_net.DTNetRecall(width=cfg.width, zero_init=cfg.zero_init)
+
+
+def _make_ff(cfg: "Config") -> torch.nn.Module:
+    return feedforward.FeedForwardNet(width=cfg.width, depth=cfg.depth)
+
+
 # model name -> (module with train_step / evaluate / solved_by_iters, constructor)
 MODELS = {
-    "dtnet": (dt_net, lambda cfg: dt_net.DTNetRecall(width=cfg.width, zero_init=cfg.zero_init)),
-    "ff": (feedforward, lambda cfg: feedforward.FeedForwardNet(width=cfg.width, depth=cfg.depth)),
+    "dtnet": (dt_net, _make_dtnet),
+    "ff": (feedforward, _make_ff),
 }
 
 
@@ -93,17 +103,29 @@ def training_data(cfg: Config, progress: bool = False):
                           cfg.val_fraction, cfg.seed, progress)
 
 
+def _extrap_dataset(cfg: Config, size: int, n: int):
+    """Held-out larger mazes from the training generators."""
+    return MazeDataset(list(cfg.train_generators), size, n, seed=10_000 + cfg.seed)
+
+
+def _test_dataset(cfg: Config, size: int, n: int, wall_removal: float):
+    """Mazes from the unseen test generators."""
+    return make_test_datasets(list(cfg.test_generators), size, n,
+                              train_generators=list(cfg.train_generators),
+                              seed=cfg.seed + 1, wall_removal=wall_removal)[size]
+
+
 def eval_sets(cfg: Config) -> dict:
-    """Every evaluation set of cfg: {result key: (make dataset, n mazes, eval batch)}."""
-    sets = {f"extrap/{size}": (lambda size=size, n=n: MazeDataset(
-                list(cfg.train_generators), size, n, seed=10_000 + cfg.seed), n, batch)
+    """Every evaluation set of cfg: {result key: (make dataset, n mazes, eval batch)}.
+
+    Datasets are built lazily by calling `make dataset()`, so skipped sets cost nothing.
+    """
+    sets = {f"extrap/{size}": (partial(_extrap_dataset, cfg, size, n), n, batch)
             for size, (n, batch) in cfg.extrap_sizes.items()}
     for wr in cfg.test_wr:
         for size, (n, batch) in cfg.test_sizes.items():
             if wr == 0 or size <= cfg.loop_test_max_size:
-                sets[f"{wr}/{size}"] = (lambda size=size, n=n, wr=wr: make_test_datasets(
-                    list(cfg.test_generators), size, n, train_generators=list(cfg.train_generators),
-                    seed=cfg.seed + 1, wall_removal=wr)[size], n, batch)
+                sets[f"{wr}/{size}"] = (partial(_test_dataset, cfg, size, n, wr), n, batch)
     return sets
 
 
@@ -128,6 +150,13 @@ class _Recorder:
             (self.out_dir / name).write_text(json.dumps(obj, indent=2))
 
 
+def _warmup_cosine(step: int, warm: int, total: int) -> float:
+    """LR multiplier: linear warmup over `warm` steps, then cosine decay to zero at `total`."""
+    if step < warm:
+        return (step + 1) / warm
+    return 0.5 * (1 + np.cos(np.pi * (step - warm) / max(1, total - warm)))
+
+
 def train(model, cfg: Config, device, rec: _Recorder, checkpoint=None, on_epoch=None, progress=False):
     """Train in place; leaves the best epoch's weights (by val solved, then val loss) in model."""
     M = MODELS[cfg.model][0]
@@ -139,9 +168,7 @@ def train(model, cfg: Config, device, rec: _Recorder, checkpoint=None, on_epoch=
 
     opt = torch.optim.Adam(model.parameters(), lr=cfg.lr)
     total, warm = cfg.epochs * len(train_loader), int(cfg.warmup * len(train_loader))
-    sched = torch.optim.lr_scheduler.LambdaLR(  # linear warmup, then cosine decay to zero
-        opt, lambda s: (s + 1) / warm if s < warm
-        else 0.5 * (1 + np.cos(np.pi * (s - warm) / max(1, total - warm))))
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, partial(_warmup_cosine, warm=warm, total=total))
 
     history = {"train_loss": [], "val_loss": [], "val_solved": [], "epoch_s": []}
     best, best_state = (-1.0, -float("inf")), None  # (val solved, -val loss): higher is better
@@ -257,6 +284,11 @@ def normalize_results(results: dict) -> dict:
     return {k: {int(t): v for t, v in r.items()} for k, r in results.items()}
 
 
+def _read_json(path: Path) -> dict:
+    """Contents of a JSON file, or {} if it does not exist."""
+    return json.loads(path.read_text()) if path.exists() else {}
+
+
 def run_or_load(cfg: Config, results_dir: Path, checkpoint_dir: Path, **kwargs) -> dict:
     """Load a finished run from results_dir/<name>, finish a partial one, or run from scratch.
 
@@ -264,8 +296,8 @@ def run_or_load(cfg: Config, results_dir: Path, checkpoint_dir: Path, **kwargs) 
     only the missing sets are evaluated, without retraining.
     """
     out, ckpt = Path(results_dir) / cfg.name, Path(checkpoint_dir) / f"{cfg.name}.pt"
-    load = lambda name: json.loads((out / name).read_text()) if (out / name).exists() else {}
-    history, results = load("history.json"), normalize_results(load("results.json"))
+    history = _read_json(out / "history.json")
+    results = normalize_results(_read_json(out / "results.json"))
     if history and eval_sets(cfg).keys() <= results.keys():
         return {"history": history, "best": None, "results": results, "cached": True}
     if history and ckpt.exists():
