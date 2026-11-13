@@ -82,6 +82,47 @@ numbers of iterations.
 - If the progressive loss does not work, the number of solved mazes is highest at
   iteration 30. After iteration 30, it decreases.
 
+### 1.7 Zero-init (`zero_init`)
+
+Zero-init is an option for the DTNet weights at the start of the training. It does not change
+the loss function. To use it, set `Config(zero_init=True)`. Only DTNet has this option.
+
+**How it works.** Each `BasicBlock` has two convolutions. With zero-init, the code sets all the
+weights of the second convolution (`conv2`) to 0 before the training starts. The block
+calculates this result:
+
+```
+out = relu(conv2(relu(conv1(x))) + x)
+```
+
+If `conv2` is 0, the result is `relu(x)`. The input `x` is already the output of a ReLU, so the
+result is `x`. Thus, each block starts as the identity. At the start of the training, one
+iteration does only `recall_conv` and a ReLU. The blocks add a change to the state only when
+the training gives their weights a value other than 0.
+
+The idea comes from Fixup and SkipInit. These methods train deep residual networks without
+batch normalization.
+
+**Why it can help DTNet.** DTNet does 30 iterations of 2 blocks in the training. Thus, the
+gradient goes through a very deep network that uses the same weights again and again, and
+the network has no batch normalization. With random initial weights, each iteration can make
+the state larger. After many iterations, the state and the gradient can become very large.
+Then, a loss spike occurs. With zero-init, the blocks start as the identity, so the state does
+not increase in each iteration at the start of the training.
+
+**The results.** Finding 5 in [SUMMARY.md](SUMMARY.md) gives the details.
+
+- Without loops in the training data, zero-init gave a better result. The model solved 100% of
+  the test mazes of size 511, against 62.5% without zero-init. The largest loss spike was 118,
+  against 8e7. Each value comes from only one run.
+- With loops in the training data, zero-init did not help. The result at 30 iterations was
+  the same as without zero-init. With more iterations, the result became very bad. The model
+  learned a method that works only for 30 iterations.
+
+Zero-init changes only the start of the training. It does not keep the network stable after
+the start. Thus, it does not replace a lower learning rate. With loops, the runs use a
+learning rate of 3e-4 (see the training stability section in [SUMMARY.md](SUMMARY.md)).
+
 ## Part 2: The runner (`runner.py`)
 
 The file `runner.py` trains one model and tests it. One `Config` object gives all the

@@ -101,6 +101,7 @@ is the fraction of solved mazes.
      iterations, the result becomes very bad: 0% at 300 iterations on all sizes larger than
      15. Thus, the model learned a method that works only for the training number of
      iterations.
+   - For a description of zero-init, see section 1.7 in [TRAINING.md](TRAINING.md).
 
 6. **A learning rate of 1e-3 is not stable.** Most runs have loss spikes and drops in the
    validation result. Without loops, the code keeps the best checkpoint, so these problems
