@@ -4,6 +4,45 @@ Do neural maze solvers generalize to mazes from **unseen generation algorithms**
 sizes** and **mazes with loops**? Models are trained on mazes from a few generators and tested
 on the others.
 
+## Installation
+
+Requires [conda](https://docs.conda.io/en/latest/miniconda.html) (Miniconda or Anaconda).
+
+```bash
+git clone https://github.com/yoshi0428/maze-generalization.git
+cd maze-generalization
+conda env create -f environment.yml
+conda activate maze-generalization
+```
+
+`environment.yml` installs PyTorch with pip. On Linux this is a CUDA build; on Windows it is the
+CPU-only build. For a GPU on Windows (or a specific CUDA version), reinstall torch from the
+PyTorch index. Run `nvidia-smi` and read "CUDA Version" in its header: that is the newest CUDA
+your driver supports. Pick a build at or below it, e.g. for CUDA 13.2:
+
+```bash
+pip install --force-reinstall torch --index-url https://download.pytorch.org/whl/cu132
+```
+
+The wheels bundle their own CUDA runtime, so you only need an NVIDIA driver, not the CUDA
+toolkit. Older builds such as `cu126` also run on newer drivers.
+
+Check that the GPU is visible (training falls back to the CPU otherwise, which is much slower):
+
+```bash
+python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+```
+
+Then start Jupyter from the repo root and open a notebook in `notebooks/`:
+
+```bash
+jupyter lab
+```
+
+The notebooks add `src/` to the import path themselves, so no package install is needed. To
+update the environment after `environment.yml` changes, run
+`conda env update -f environment.yml --prune`.
+
 ## Layout
 
 - `src/generators/`: nine maze generators (DFS, Prim's, Kruskal's, Eller's, Aldous-Broder,

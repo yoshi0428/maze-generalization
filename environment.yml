@@ -1,0 +1,22 @@
+name: maze-generalization
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - numpy
+  # OpenBLAS, not MKL: MKL loads its own OpenMP runtime, which clashes with the one in the
+  # torch wheel on Windows ("OMP: Error #15").
+  - libblas=*=*openblas
+  - pandas
+  - matplotlib
+  - tqdm
+  - optuna
+  - plotly
+  - nbformat
+  - jupyterlab
+  - ipykernel
+  - ipywidgets
+  - pip
+  - pip:
+      # CPU/CUDA build is chosen by pip; see README for a specific CUDA version.
+      - torch

@@ -35,24 +35,24 @@
   "mazes missed_forced": 83,
   "mazes missed_tied": 0,
   "mazes extra_route": 0,
-  "mazes extra_deadend": 76,
-  "missed_forced": 11560,
+  "mazes extra_deadend": 77,
+  "missed_forced": 11684,
   "missed_tied": 0,
   "extra_route": 0,
-  "extra_deadend": 1359
+  "extra_deadend": 1360
  },
  "0.1/15": {
   "n": 200,
-  "failed": 29,
+  "failed": 28,
   "connected": 24,
   "one_shortest_path": 9,
-  "mazes missed_forced": 6,
+  "mazes missed_forced": 5,
   "mazes missed_tied": 21,
-  "mazes extra_route": 10,
+  "mazes extra_route": 9,
   "mazes extra_deadend": 3,
-  "missed_forced": 34,
-  "missed_tied": 292,
-  "extra_route": 173,
+  "missed_forced": 33,
+  "missed_tied": 297,
+  "extra_route": 172,
   "extra_deadend": 8
  },
  "0.1/31": {
@@ -78,9 +78,9 @@
   "mazes missed_tied": 64,
   "mazes extra_route": 78,
   "mazes extra_deadend": 4,
-  "missed_forced": 3674,
-  "missed_tied": 2580,
-  "extra_route": 2556,
-  "extra_deadend": 7
+  "missed_forced": 3708,
+  "missed_tied": 2579,
+  "extra_route": 2597,
+  "extra_deadend": 15
  }
 }
