@@ -1,9 +1,85 @@
 # Training and evaluation
 
-This document describes the loss function in [src/models/dt_net.py](../src/models/dt_net.py)
-and the training and evaluation code in [src/runner.py](../src/runner.py). It uses the
-ASD-STE100 Simplified Technical English standard. Names from the code stay as they are in the
-code.
+This document gives the causes of the DTNet extrapolation. It also describes the loss function
+in [src/models/dt_net.py](../src/models/dt_net.py) and the training and evaluation code in
+[src/runner.py](../src/runner.py). It uses the ASD-STE100 Simplified Technical English
+standard. Names from the code stay as they are in the code.
+
+## Part 0: Why DTNet can solve larger mazes
+
+DTNet trains on mazes of size 15. But it can solve test mazes up to size 511 (see finding 1 in
+[SUMMARY.md](SUMMARY.md)). The feedforward model trains on the same data. It solves only 28.8%
+of the mazes of size 31, and it solves no larger mazes. This part gives the causes of this
+difference.
+
+### 0.1 The quantity of computation can increase at test time
+
+A larger maze needs more computation, because the path is longer.
+
+A 3 × 3 convolution moves data by a maximum of 1 pixel. One DTNet iteration has 5
+convolutions: `recall_conv` and two blocks of two convolutions. Thus, one iteration moves data
+by a maximum of 5 pixels along a passage. For example, the data about a dead end must go along
+the full passage before the network can remove that passage.
+
+- DTNet uses the same weights in each iteration. Thus, at test time you can do more iterations
+  than in the training. Each iteration moves the data more. For example,
+  `dtnet_s15_noloops_zeroinit` needs approximately 100 iterations at size 63 and 1000
+  iterations at sizes 255 and 511.
+- The feedforward model has 64 convolutions with different weights. It cannot do more. Thus,
+  data cannot move more than 64 pixels, and a long path in a large maze is not possible for
+  this model.
+
+The feedforward model also fails at size 31, where 64 pixels is sufficient for most paths. Thus,
+the number of convolutions is not the only cause. Section 0.2 gives the other cause.
+
+### 0.2 DTNet learns one step that it can repeat
+
+DTNet has only one set of weights for each iteration. Thus, it must learn one step that
+improves the state. A good step of this type is a local rule. The rule examines only a small
+area near each pixel.
+
+An example of a local rule is dead-end filling:
+
+1. Find each passage pixel with walls on three sides. Do not use the start or the exit.
+2. Change this pixel to a wall.
+3. Do these steps again until no change occurs.
+
+In a perfect maze, only the path from the start to the exit remains. This rule does not
+depend on the maze size. A larger maze needs only more repeats. The error analysis in
+[SUMMARY.md](SUMMARY.md) shows that DTNet learns a rule of this type when it trains without
+loops.
+
+The feedforward model has different weights in each block. Thus, each block can learn a
+different operation. These operations can solve the mazes of size 15, but they do not have to
+be a general rule. Thus, the model does not solve larger mazes.
+
+### 0.3 Other design features that help
+
+These features make the repeated step stable for many iterations:
+
+- **Fully convolutional layers.** All layers are convolutions. Thus, the same weights work on
+  an image of any size.
+- **Recall.** Each iteration adds the input maze to the state (`torch.cat([h, x])`). Thus, the
+  network does not forget the maze after many iterations. The state does not have to keep a
+  copy of the maze.
+- **No batch normalization.** Batch normalization uses statistics from the training. After
+  more iterations than in the training, these statistics are not correct.
+- **The progressive loss.** It prevents the network from counting the iterations. Thus, each
+  iteration is a small improvement that you can repeat. See section 1.3.
+- **Zero-init.** It can make the training more stable. See section 1.7.
+
+### 0.4 Limits
+
+A local rule like dead-end filling is not sufficient for mazes with loops. A loop has no dead
+end, so the rule keeps all the loops. To find the shortest path, the model must compare the
+lengths of different routes.
+
+A breadth-first search can also be a local rule: a wave goes out from the start and from the
+exit, one pixel in each step. But to compare the routes, each pixel must keep a distance. In a
+larger maze, the distances are larger than in the training mazes. A state with a fixed number
+of channels must keep these larger values, and the training does not show them. This can be
+one cause of the results: DTNet does not solve large mazes with loops (see findings 4 and 5 in
+[SUMMARY.md](SUMMARY.md)).
 
 ## Part 1: The DTNet loss function (`dt_net.train_step`)
 
