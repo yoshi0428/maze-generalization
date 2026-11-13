@@ -65,7 +65,57 @@ update the environment after `environment.yml` changes, run
   retrains the best configuration. Finished runs are loaded from `results/`, so it resumes.
 - `src/runner.py`: train/evaluate one `Config`; used by the experiments and pipeline notebooks. Each run writes
   logs, loss curves and test results to `results/<name>/` and the checkpoint to
-  `checkpoints/<name>.pt`. `results/SUMMARY.md` summarizes the runs so far.
+  `checkpoints/<name>.pt`. `docs/SUMMARY.md` summarizes the runs so far.
+- `docs/TRAINING.md`: how DTNet's progressive loss and the training/evaluation loop in
+  `src/runner.py` work.
+- `docs/DATASET.md`: the maze format, the generators, the sample tensors and the dataset
+  interface in `src/dataset.py` and `src/runner.py`.
+
+## Models
+
+Both models share the projection, the residual block and the head. DTNet loops one
+weight-tied block stack for any number of iterations and concatenates the raw input to its state
+every iteration ("recall"); the feedforward net stacks `depth` blocks with separate weights.
+Shapes use the defaults (`width` = 128); all convs are 3×3, padding 1, no bias.
+
+```mermaid
+flowchart TB
+    subgraph DT["DTNetRecall"]
+        direction TB
+        dx["x (B, 3, H, W)<br/>passage · start · exit"] --> dproj["projection<br/>conv 3→128 + ReLU"]
+        dproj --> dh["state h (B, 128, H, W)"]
+        dh --> dcat["concat [h, x]<br/>(B, 131, H, W)"]
+        dx -. recall .-> dcat
+        dcat --> drc["recall_conv 131→128 + ReLU"]
+        drc --> dblk["blocks: num_blocks × BasicBlock<br/>(shared weights)"]
+        dblk -- "repeat iters times" --> dh
+        dblk --> dhead["head<br/>conv 128→32, ReLU<br/>conv 32→8, ReLU<br/>conv 8→2"]
+        dhead --> dout["logits (B, 2, H, W)<br/>+ final state h"]
+    end
+
+    subgraph FF["FeedForwardNet"]
+        direction TB
+        fx["x (B, 3, H, W)"] --> fproj["projection<br/>conv 3→128 + ReLU"]
+        fproj --> fb1["BasicBlock 1"]
+        fb1 --> fbd["…"]
+        fbd --> fbn["BasicBlock depth<br/>(own weights each, depth = 30)"]
+        fbn --> fhead["head<br/>conv 128→32, ReLU<br/>conv 32→8, ReLU<br/>conv 8→2"]
+        fhead --> fout["logits (B, 2, H, W)"]
+    end
+
+    subgraph BB["BasicBlock (no batchnorm)"]
+        direction TB
+        bin["in (B, 128, H, W)"] --> bc1["conv 128→128 + ReLU"]
+        bc1 --> bc2["conv 128→128"]
+        bc2 --> badd(("+"))
+        bin -- skip --> badd
+        badd --> brelu["ReLU → out"]
+    end
+```
+
+`interim_thought` lets DTNet resume from a saved state `h` instead of the projection, which the
+progressive loss and the incremental test-time evaluation use. With `zero_init`, each block's
+second conv starts at zero, so every block begins as the identity.
 
 ## References
 
