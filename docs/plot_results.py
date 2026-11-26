@@ -58,9 +58,53 @@ def plot(sizes, idx, title, filename):
     print(f"Saved {out}")
 
 
+def plot_iterations():
+    """% of perfect test mazes that dtnet_s15_noloops_zeroinit solves, per iteration count."""
+    sizes = [63, 127, 255, 511]
+    # Iteration count: (color from a light-to-dark blue ramp, results per size).
+    iters = {
+        30: ("#84b9f3", [7, 0, 0, 0]),
+        100: ("#338ced", [99, 43, 0, 0]),
+        300: ("#1b64be", [100, 100, 72.5, 18.8]),
+        1000: ("#0e3d7e", [100, 100, 100, 100]),
+    }
+    fig, ax = plt.subplots(figsize=(9, 5))
+    n = len(iters)
+    width = 0.8 / n
+    x = np.arange(len(sizes))
+    for i, (it, (color, vals)) in enumerate(iters.items()):
+        v = np.array(vals, dtype=float)
+        pos = x + (i - (n - 1) / 2) * width
+        ax.bar(pos, np.maximum(v, 0.6), width * 0.9, color=color,
+               label=f"{it} iterations", edgecolor="white", linewidth=1)
+        for p, val in zip(pos, v):
+            ax.text(p, max(val, 0.6) + 1.5, f"{val:g}", ha="center", va="bottom",
+                    fontsize=7, color=INK_2)
+    ax.set_xticks(x, [f"{s}×{s}" for s in sizes])
+    ax.set_title("dtnet_s15_noloops_zeroinit: iterations needed (perfect mazes)",
+                 color=INK, fontsize=12, loc="left", pad=12)
+    ax.set_xlabel("Maze size", color=INK_2)
+    ax.set_ylabel("Solved mazes (%)", color=INK_2)
+    ax.set_ylim(0, 108)
+    ax.yaxis.grid(True, color=GRID, linewidth=0.8)
+    ax.set_axisbelow(True)
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+    ax.spines["bottom"].set_color(INK_2)
+    ax.tick_params(colors=INK_2, length=0)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=4,
+              frameon=False, fontsize=9)
+    fig.tight_layout()
+    out = OUT_DIR / "results_iterations.png"
+    fig.savefig(out, dpi=150, facecolor="white")
+    plt.close(fig)
+    print(f"Saved {out}")
+
+
 def main():
     plot(PERFECT_SIZES, 0, "Perfect mazes (no loops)", "results_perfect.png")
     plot(LOOPS_SIZES, 1, "Mazes with loops (10% of walls removed)", "results_loops.png")
+    plot_iterations()
 
 
 if __name__ == "__main__":
