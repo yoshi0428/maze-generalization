@@ -78,40 +78,16 @@ weight-tied block stack for any number of iterations and concatenates the raw in
 every iteration ("recall"); the feedforward net stacks `depth` blocks with separate weights.
 Shapes use the defaults (`width` = 128); all convs are 3×3, padding 1, no bias.
 
-```mermaid
-flowchart TB
-    subgraph DT["DTNetRecall"]
-        direction TB
-        dx["x (B, 3, H, W)<br/>passage · start · exit"] --> dproj["projection<br/>conv 3→128 + ReLU"]
-        dproj --> dh["state h (B, 128, H, W)"]
-        dh --> dcat["concat [h, x]<br/>(B, 131, H, W)"]
-        dx -. recall .-> dcat
-        dcat --> drc["recall_conv 131→128 + ReLU"]
-        drc --> dblk["blocks: num_blocks × BasicBlock<br/>(shared weights)"]
-        dblk -- "repeat iters times" --> dh
-        dblk --> dhead["head<br/>conv 128→32, ReLU<br/>conv 32→8, ReLU<br/>conv 8→2"]
-        dhead --> dout["logits (B, 2, H, W)<br/>+ final state h"]
-    end
+<p align="center">
+  <img src="docs/figures/dtnet.svg" alt="DTNetRecall forward pass" width="560">
+</p>
+<p align="center">
+  <img src="docs/figures/feedforward.svg" alt="FeedForwardNet" width="380">
+  <img src="docs/figures/basic_block.svg" alt="BasicBlock" width="340">
+</p>
 
-    subgraph FF["FeedForwardNet"]
-        direction TB
-        fx["x (B, 3, H, W)"] --> fproj["projection<br/>conv 3→128 + ReLU"]
-        fproj --> fb1["BasicBlock 1"]
-        fb1 --> fbd["…"]
-        fbd --> fbn["BasicBlock depth<br/>(own weights each, depth = 30)"]
-        fbn --> fhead["head<br/>conv 128→32, ReLU<br/>conv 32→8, ReLU<br/>conv 8→2"]
-        fhead --> fout["logits (B, 2, H, W)"]
-    end
-
-    subgraph BB["BasicBlock (no batchnorm)"]
-        direction TB
-        bin["in (B, 128, H, W)"] --> bc1["conv 128→128 + ReLU"]
-        bc1 --> bc2["conv 128→128"]
-        bc2 --> badd(("+"))
-        bin -- skip --> badd
-        badd --> brelu["ReLU → out"]
-    end
-```
+`docs/figures/make_figures.py` draws these figures. Run `python docs/figures/make_figures.py` to
+rebuild the SVGs, and the PNGs if `rsvg-convert` is installed.
 
 `interim_thought` lets DTNet resume from a saved state `h` instead of the projection, which the
 progressive loss and the incremental test-time evaluation use. With `zero_init`, each block's

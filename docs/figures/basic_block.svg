@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="640" viewBox="0 0 560 640">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f3a93"/></marker>
+<marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c26a00"/></marker>
+<style>
+text{font-family:Helvetica,Arial,sans-serif;fill:#1a1a1a}
+.box{fill:#eef2fb;stroke:#1f3a93;stroke-width:2}
+.out{fill:#fdecea;stroke:#c0392b;stroke-width:2}
+.outt{fill:#c0392b}
+.op{fill:#fff;stroke:#1f3a93;stroke-width:2}
+.ln{fill:none;stroke:#1f3a93;stroke-width:2}
+.ar{fill:none;stroke:#1f3a93;stroke-width:2;marker-end:url(#a)}
+.dash{fill:none;stroke:#1f3a93;stroke-width:2;stroke-dasharray:7 5;marker-end:url(#a)}
+.grp{fill:#f7f9fd;stroke:#8a94a8;stroke-width:1.5;stroke-dasharray:8 6}
+.rc{fill:none;stroke:#c26a00;stroke-width:2.5;marker-end:url(#b)}
+.rcbox{fill:#fff4e0;stroke:#c26a00;stroke-width:2}
+text.rct{fill:#c26a00}
+.t{font-size:18px;text-anchor:middle}
+.s{font-size:14px;fill:#555}
+.sm{font-size:14px;fill:#555;text-anchor:middle}
+.h{font-size:24px;font-weight:bold}
+</style></defs>
+<rect width="560" height="640" fill="#fff"/>
+<text x="30" y="44" class="h">BasicBlock</text>
+<text x="30" y="68" class="s">residual block, no batchnorm</text>
+<!-- output -->
+<text x="380" y="112" class="t">out = ReLU(x + F(x))</text>
+<rect x="330" y="150" width="100" height="40" rx="6" class="box"/><text x="380" y="176" class="t">ReLU</text>
+<path d="M380,150 L380,124" class="ar"/>
+<circle cx="380" cy="250" r="18" class="op"/><path d="M370,250 h20 M380,240 v20" class="ln"/>
+<path d="M380,232 L380,192" class="ar"/>
+<!-- residual branch -->
+<rect x="90" y="300" width="180" height="50" rx="6" class="box"/><text x="180" y="324" class="t">conv2</text><text x="180" y="342" class="sm">3×3, 128→128</text>
+<rect x="90" y="410" width="180" height="50" rx="6" class="box"/><text x="180" y="434" class="t">conv1</text><text x="180" y="452" class="sm">3×3, 128→128</text>
+<path d="M180,410 L180,352" class="ar"/><text x="192" y="386" class="s">ReLU</text>
+<path d="M180,300 L180,250 L360,250" class="ar"/><text x="130" y="270" style="font-size:18px">F(x)</text>
+<!-- skip -->
+<circle cx="380" cy="530" r="4" fill="#1f3a93"/>
+<path d="M380,530 L180,530 L180,462" class="ar"/>
+<path d="M380,530 L380,270" class="ar"/><text x="392" y="400" class="s">skip (identity)</text>
+<path d="M380,590 L380,530" class="ln"/>
+<text x="380" y="612" class="t">x : (B, 128, H, W)</text>
+</svg>
